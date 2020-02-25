@@ -69,16 +69,20 @@ public class CamundaBpmWebappAutoConfiguration implements WebMvcConfigurer {
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     final String classpath = "classpath:" + properties.getWebapp().getWebjarClasspath();
-    registry.addResourceHandler("/lib/**").addResourceLocations(classpath + "/lib/");
-    registry.addResourceHandler("/api/**").addResourceLocations("classpath:/api/");
-    registry.addResourceHandler("/app/**").addResourceLocations(classpath + "/app/");
+    registry.addResourceHandler(webappPath("/lib/**")).addResourceLocations(classpath + "/lib/");
+    registry.addResourceHandler(webappPath("/api/**")).addResourceLocations("classpath:/api/");
+    registry.addResourceHandler(webappPath("/app/**")).addResourceLocations(classpath + "/app/");
   }
 
   @Override
   public void addViewControllers(ViewControllerRegistry registry) {
     if (properties.getWebapp().isIndexRedirectEnabled()) {
-      registry.addRedirectViewController("/", "/app/");
+      registry.addRedirectViewController("/", webappPath("/app/"));
     }
+  }
+
+  protected String webappPath(String path) {
+    return properties.getWebapp().getWebappPath() + path;
   }
 
 }

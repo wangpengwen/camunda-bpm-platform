@@ -29,6 +29,8 @@ public class WebappProperty {
 
   private String securityConfigFile = "/securityFilterRules.json";
 
+  private String webappPath = "";
+
   @NestedConfigurationProperty
   private CsrfProperties csrf = new CsrfProperties();
 
@@ -59,6 +61,14 @@ public class WebappProperty {
     this.securityConfigFile = securityConfigFile;
   }
 
+  public String getWebappPath() {
+    return webappPath;
+  }
+
+  public void setWebappPath(String webappPath) {
+    this.webappPath = webappPath;
+  }
+
   public CsrfProperties getCsrf() {
     return csrf;
   }
@@ -81,6 +91,7 @@ public class WebappProperty {
       .add("indexRedirectEnabled=" + indexRedirectEnabled)
       .add("webjarClasspath='" + webjarClasspath + '\'')
       .add("securityConfigFile='" + securityConfigFile + '\'')
+      .add("webappPath='" + webappPath + '\'')
       .add("csrf='" + csrf + '\'')
       .add("headerSecurityProperties='" + headerSecurity + '\'')
       .toString();

@@ -84,27 +84,31 @@ public class CamundaBpmWebappInitializer implements ServletContextInitializer {
     servletContext.addListener(new WelcomeContainerBootstrap());
     servletContext.addListener(new HttpSessionMutexListener());
 
-    registerFilter("Authentication Filter", AuthenticationFilter.class, "/api/*", "/app/*");
-    registerFilter("Security Filter", LazySecurityFilter.class, singletonMap("configFile", properties.getWebapp().getSecurityConfigFile()), "/api/*", "/app/*");
-    registerFilter("CsrfPreventionFilter", SpringBootCsrfPreventionFilter.class, properties.getWebapp().getCsrf().getInitParams(),"/api/*", "/app/*");
+    registerFilter("Authentication Filter", AuthenticationFilter.class, webappPath("/api/*"), webappPath("/app/*"));
+    registerFilter("Security Filter", LazySecurityFilter.class, singletonMap("configFile", properties.getWebapp().getSecurityConfigFile()), webappPath("/api/*"), webappPath("/app/*"));
+    registerFilter("CsrfPreventionFilter", SpringBootCsrfPreventionFilter.class, properties.getWebapp().getCsrf().getInitParams(), webappPath("/api/*"), webappPath("/app/*"));
 
     Map<String, String> headerSecurityProperties = properties.getWebapp()
       .getHeaderSecurity()
       .getInitParams();
 
-    registerFilter("HttpHeaderSecurity", HttpHeaderSecurityFilter.class, headerSecurityProperties,"/api/*", "/app/*");
+    registerFilter("HttpHeaderSecurity", HttpHeaderSecurityFilter.class, headerSecurityProperties,webappPath("/api/*"), webappPath("/app/*"));
 
-    registerFilter("Engines Filter", LazyProcessEnginesFilter.class, "/api/*", "/app/*");
+    registerFilter("Engines Filter", LazyProcessEnginesFilter.class, webappPath("/api/*"), webappPath("/app/*"));
 
-    registerFilter("EmptyBodyFilter", EmptyBodyFilter.class, "/api/*", "/app/*");
+    registerFilter("EmptyBodyFilter", EmptyBodyFilter.class, webappPath("/api/*"), webappPath("/app/*"));
 
-    registerFilter("CacheControlFilter", CacheControlFilter.class, "/api/*", "/app/*");
+    registerFilter("CacheControlFilter", CacheControlFilter.class, webappPath("/api/*"), webappPath("/app/*"));
 
-    registerServlet("Cockpit Api", CockpitApplication.class, "/api/cockpit/*");
-    registerServlet("Admin Api", AdminApplication.class, "/api/admin/*");
-    registerServlet("Tasklist Api", TasklistApplication.class, "/api/tasklist/*");
-    registerServlet("Engine Api", EngineRestApplication.class, "/api/engine/*");
-    registerServlet("Welcome Api", WelcomeApplication.class, "/api/welcome/*");
+    registerServlet("Cockpit Api", CockpitApplication.class, webappPath("/api/cockpit/*"));
+    registerServlet("Admin Api", AdminApplication.class, webappPath("/api/admin/*"));
+    registerServlet("Tasklist Api", TasklistApplication.class, webappPath("/api/tasklist/*"));
+    registerServlet("Engine Api", EngineRestApplication.class, webappPath("/api/engine/*"));
+    registerServlet("Welcome Api", WelcomeApplication.class, webappPath("/api/welcome/*"));
+  }
+
+  protected String webappPath(String path) {
+    return properties.getWebapp().getWebappPath() + path;
   }
 
   private FilterRegistration registerFilter(final String filterName, final Class<? extends Filter> filterClass, final String... urlPatterns) {
