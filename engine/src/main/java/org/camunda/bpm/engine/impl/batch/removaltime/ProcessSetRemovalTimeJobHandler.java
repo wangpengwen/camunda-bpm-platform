@@ -165,6 +165,7 @@ public class ProcessSetRemovalTimeJobHandler extends AbstractBatchJobHandler<Set
     return JOB_DECLARATION;
   }
 
+  @Override
   protected SetRemovalTimeBatchConfiguration createJobConfiguration(SetRemovalTimeBatchConfiguration configuration, List<String> processInstanceIds) {
     return new SetRemovalTimeBatchConfiguration(processInstanceIds)
       .setRemovalTime(configuration.getRemovalTime())

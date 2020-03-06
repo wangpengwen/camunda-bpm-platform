@@ -17,7 +17,6 @@
 package org.camunda.bpm.engine.impl.batch.externaltask;
 
 import java.util.List;
-
 import org.camunda.bpm.engine.batch.Batch;
 import org.camunda.bpm.engine.impl.batch.AbstractBatchJobHandler;
 import org.camunda.bpm.engine.impl.batch.BatchJobConfiguration;
@@ -33,7 +32,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
 public class SetExternalTaskRetriesJobHandler extends AbstractBatchJobHandler<SetRetriesBatchConfiguration> {
 
   public static final BatchJobDeclaration JOB_DECLARATION = new BatchJobDeclaration(Batch.TYPE_SET_EXTERNAL_TASK_RETRIES);
-  
+
   @Override
   public String getType() {
     return Batch.TYPE_SET_EXTERNAL_TASK_RETRIES;
@@ -60,7 +59,7 @@ public class SetExternalTaskRetriesJobHandler extends AbstractBatchJobHandler<Se
     }
 
     commandContext.getByteArrayManager().delete(configurationEntity);
-    
+
   }
 
   @Override
@@ -69,9 +68,8 @@ public class SetExternalTaskRetriesJobHandler extends AbstractBatchJobHandler<Se
   }
 
   @Override
-  protected SetRetriesBatchConfiguration createJobConfiguration(SetRetriesBatchConfiguration configuration,
-      List<String> processIdsForJob) {
-    return new SetRetriesBatchConfiguration(processIdsForJob, configuration.getRetries());
+  protected SetRetriesBatchConfiguration createJobConfiguration(SetRetriesBatchConfiguration configuration, List<String> processIdsForJob) {
+    return new SetRetriesBatchConfiguration(processIdsForJob, null, configuration.getRetries());
   }
 
   @Override

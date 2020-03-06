@@ -155,6 +155,7 @@ public class DecisionSetRemovalTimeJobHandler extends AbstractBatchJobHandler<Se
     return JOB_DECLARATION;
   }
 
+  @Override
   protected SetRemovalTimeBatchConfiguration createJobConfiguration(SetRemovalTimeBatchConfiguration configuration, List<String> decisionInstanceIds) {
     return new SetRemovalTimeBatchConfiguration(decisionInstanceIds)
       .setRemovalTime(configuration.getRemovalTime())

@@ -17,6 +17,7 @@
 package org.camunda.bpm.engine.impl.batch.deletion;
 
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.json.JsonObjectConverter;
 import org.camunda.bpm.engine.impl.util.JsonUtil;
 import com.google.gson.JsonObject;
@@ -32,22 +33,28 @@ public class DeleteHistoricProcessInstanceBatchConfigurationJsonConverter extend
   public static final DeleteHistoricProcessInstanceBatchConfigurationJsonConverter INSTANCE = new DeleteHistoricProcessInstanceBatchConfigurationJsonConverter();
 
   public static final String HISTORIC_PROCESS_INSTANCE_IDS = "historicProcessInstanceIds";
+  public static final String HISTORIC_PROCESS_INSTANCE_ID_MAPPINGS = "historicProcessInstanceIdMappings";
   public static final String FAIL_IF_NOT_EXISTS = "failIfNotExists";
 
   public JsonObject toJsonObject(BatchConfiguration configuration) {
     JsonObject json = JsonUtil.createObject();
-
+    JsonUtil.addListField(json, HISTORIC_PROCESS_INSTANCE_ID_MAPPINGS, DeploymentMapping.toStringList(configuration.getIdMappings()));
     JsonUtil.addListField(json, HISTORIC_PROCESS_INSTANCE_IDS, configuration.getIds());
     JsonUtil.addField(json, FAIL_IF_NOT_EXISTS, configuration.isFailIfNotExists());
     return json;
   }
 
   public BatchConfiguration toObject(JsonObject json) {
-    BatchConfiguration configuration = new BatchConfiguration(readProcessInstanceIds(json), JsonUtil.getBoolean(json, FAIL_IF_NOT_EXISTS));
+    BatchConfiguration configuration = new BatchConfiguration(readProcessInstanceIds(json), readIdMappings(json),
+        JsonUtil.getBoolean(json, FAIL_IF_NOT_EXISTS));
     return configuration;
   }
 
   protected List<String> readProcessInstanceIds(JsonObject jsonObject) {
     return JsonUtil.asStringList(JsonUtil.getArray(jsonObject, HISTORIC_PROCESS_INSTANCE_IDS));
+  }
+
+  protected List<DeploymentMapping> readIdMappings(JsonObject json) {
+    return DeploymentMapping.fromStringList(JsonUtil.asStringList(JsonUtil.getArray(json, HISTORIC_PROCESS_INSTANCE_ID_MAPPINGS)));
   }
 }

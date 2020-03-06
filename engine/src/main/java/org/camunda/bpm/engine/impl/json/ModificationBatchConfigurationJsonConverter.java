@@ -19,6 +19,7 @@ package org.camunda.bpm.engine.impl.json;
 import java.util.List;
 
 import org.camunda.bpm.engine.impl.ModificationBatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.cmd.AbstractProcessInstanceModificationCommand;
 import org.camunda.bpm.engine.impl.util.JsonUtil;
 import com.google.gson.JsonObject;
@@ -28,6 +29,7 @@ public class ModificationBatchConfigurationJsonConverter extends JsonObjectConve
   public static final ModificationBatchConfigurationJsonConverter INSTANCE = new ModificationBatchConfigurationJsonConverter();
   public static final String INSTRUCTIONS = "instructions";
   public static final String PROCESS_INSTANCE_IDS = "processInstanceIds";
+  public static final String PROCESS_INSTANCE_ID_MAPPINGS = "processInstanceIdMappings";
   public static final String SKIP_LISTENERS = "skipListeners";
   public static final String SKIP_IO_MAPPINGS = "skipIoMappings";
   public static final String PROCESS_DEFINITION_ID = "processDefinitionId";
@@ -38,6 +40,7 @@ public class ModificationBatchConfigurationJsonConverter extends JsonObjectConve
 
     JsonUtil.addListField(json, INSTRUCTIONS, ModificationCmdJsonConverter.INSTANCE, configuration.getInstructions());
     JsonUtil.addListField(json, PROCESS_INSTANCE_IDS, configuration.getIds());
+    JsonUtil.addListField(json, PROCESS_INSTANCE_ID_MAPPINGS, DeploymentMapping.toStringList(configuration.getIdMappings()));
     JsonUtil.addField(json, PROCESS_DEFINITION_ID, configuration.getProcessDefinitionId());
     JsonUtil.addField(json, SKIP_LISTENERS, configuration.isSkipCustomListeners());
     JsonUtil.addField(json, SKIP_IO_MAPPINGS, configuration.isSkipIoMappings());
@@ -49,6 +52,7 @@ public class ModificationBatchConfigurationJsonConverter extends JsonObjectConve
   public ModificationBatchConfiguration toObject(JsonObject json) {
 
     List<String> processInstanceIds = readProcessInstanceIds(json);
+    List<DeploymentMapping> mappings = readIdMappings(json);
     String processDefinitionId = JsonUtil.getString(json, PROCESS_DEFINITION_ID);
     List<AbstractProcessInstanceModificationCommand> instructions = JsonUtil.asList(JsonUtil.getArray(json, INSTRUCTIONS),
         ModificationCmdJsonConverter.INSTANCE);
@@ -57,6 +61,7 @@ public class ModificationBatchConfigurationJsonConverter extends JsonObjectConve
 
     return new ModificationBatchConfiguration(
         processInstanceIds,
+        mappings,
         processDefinitionId,
         instructions,
         skipCustomListeners,
@@ -67,4 +72,7 @@ public class ModificationBatchConfigurationJsonConverter extends JsonObjectConve
     return JsonUtil.asStringList(JsonUtil.getArray(jsonObject, PROCESS_INSTANCE_IDS));
   }
 
+  protected List<DeploymentMapping> readIdMappings(JsonObject json) {
+    return DeploymentMapping.fromStringList(JsonUtil.asStringList(JsonUtil.getArray(json, PROCESS_INSTANCE_ID_MAPPINGS)));
+  }
 }

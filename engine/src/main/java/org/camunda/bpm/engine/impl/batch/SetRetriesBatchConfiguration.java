@@ -21,12 +21,12 @@ import java.util.List;
 public class SetRetriesBatchConfiguration extends BatchConfiguration {
 
   protected int retries;
-  
-  public SetRetriesBatchConfiguration(List<String> ids, int retries) {
-    super(ids);
+
+  public SetRetriesBatchConfiguration(List<String> ids, List<DeploymentMapping> mappings, int retries) {
+    super(ids, mappings);
     this.retries = retries;
   }
-  
+
   public int getRetries() {
     return retries;
   }

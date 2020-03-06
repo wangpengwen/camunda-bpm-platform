@@ -16,21 +16,22 @@
  */
 package org.camunda.bpm.engine.impl;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.camunda.bpm.engine.batch.Batch;
 import org.camunda.bpm.engine.impl.batch.AbstractBatchJobHandler;
+import org.camunda.bpm.engine.impl.batch.BatchEntity;
 import org.camunda.bpm.engine.impl.batch.BatchJobConfiguration;
 import org.camunda.bpm.engine.impl.batch.BatchJobContext;
 import org.camunda.bpm.engine.impl.batch.BatchJobDeclaration;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.jobexecutor.JobDeclaration;
 import org.camunda.bpm.engine.impl.persistence.entity.ByteArrayEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.JobEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 
 /**
  *
@@ -44,13 +45,6 @@ public class RestartProcessInstancesJobHandler extends AbstractBatchJobHandler<R
   @Override
   public String getType() {
     return Batch.TYPE_PROCESS_INSTANCE_RESTART;
-  }
-
-  @Override
-  protected void postProcessJob(RestartProcessInstancesBatchConfiguration configuration, JobEntity job) {
-    CommandContext commandContext = Context.getCommandContext();
-    ProcessDefinitionEntity processDefinitionEntity = commandContext.getProcessEngineConfiguration().getDeploymentCache().findDeployedProcessDefinitionById(configuration.getProcessDefinitionId());
-    job.setDeploymentId(processDefinitionEntity.getDeploymentId());
   }
 
   @Override
@@ -101,6 +95,20 @@ public class RestartProcessInstancesJobHandler extends AbstractBatchJobHandler<R
   }
 
   @Override
+  protected boolean doCreateJobs(BatchEntity batch, RestartProcessInstancesBatchConfiguration configuration) {
+    List<DeploymentMapping> idMappings = configuration.getIdMappings();
+    if (idMappings == null || idMappings.isEmpty()) {
+      // create mapping for legacy seed jobs
+      String deploymentId = Context.getCommandContext().getProcessEngineConfiguration()
+          .getDeploymentCache().findDeployedProcessDefinitionById(configuration.getProcessDefinitionId())
+          .getDeploymentId();
+      idMappings = Arrays.asList(new DeploymentMapping(deploymentId, configuration.getIds().size()));
+      configuration.setIdMappings(idMappings);
+    }
+    return super.doCreateJobs(batch, configuration);
+  }
+
+  @Override
   public JobDeclaration<BatchJobContext, MessageEntity> getJobDeclaration() {
     return JOB_DECLARATION;
   }
@@ -108,7 +116,7 @@ public class RestartProcessInstancesJobHandler extends AbstractBatchJobHandler<R
   @Override
   protected RestartProcessInstancesBatchConfiguration createJobConfiguration(RestartProcessInstancesBatchConfiguration configuration,
       List<String> processIdsForJob) {
-    return new RestartProcessInstancesBatchConfiguration(processIdsForJob, configuration.getInstructions(), configuration.getProcessDefinitionId(),
+    return new RestartProcessInstancesBatchConfiguration(processIdsForJob, null, configuration.getInstructions(), configuration.getProcessDefinitionId(),
         configuration.isInitialVariables(), configuration.isSkipCustomListeners(), configuration.isSkipIoMappings(), configuration.isWithoutBusinessKey());
   }
 

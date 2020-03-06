@@ -417,7 +417,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(decisionInstanceIds, null);
 
     // when
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
 
     // then the seed job definition still exists but the seed job is removed
     JobDefinition seedJobDefinition = helper.getSeedJobDefinition(batch);
@@ -441,7 +441,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(query, null);
 
     // when
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
 
     // then the seed job definition still exists but the seed job is removed
     JobDefinition seedJobDefinition = helper.getSeedJobDefinition(batch);
@@ -465,7 +465,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(decisionInstanceIds, query, null);
 
     // when
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
 
     // then the seed job definition still exists but the seed job is removed
     JobDefinition seedJobDefinition = helper.getSeedJobDefinition(batch);
@@ -487,7 +487,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     // given
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(decisionInstanceIds, null);
 
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
     List<Job> deletionJobs = helper.getExecutionJobs(batch);
 
     // when
@@ -506,7 +506,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     HistoricDecisionInstanceQuery query = historyService.createHistoricDecisionInstanceQuery().decisionDefinitionKey(DECISION);
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(query, null);
 
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
     List<Job> deletionJobs = helper.getExecutionJobs(batch);
 
     // when
@@ -524,7 +524,7 @@ public class BatchHistoricDecisionInstanceDeletionTest {
     HistoricDecisionInstanceQuery query = historyService.createHistoricDecisionInstanceQuery().decisionDefinitionKey(DECISION);
     Batch batch = historyService.deleteHistoricDecisionInstancesAsync(decisionInstanceIds, query, null);
 
-    helper.executeSeedJob(batch);
+    helper.completeSeedJobs(batch);
     List<Job> deletionJobs = helper.getExecutionJobs(batch);
 
     // when

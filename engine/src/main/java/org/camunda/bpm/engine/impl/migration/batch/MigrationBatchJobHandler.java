@@ -18,9 +18,11 @@ package org.camunda.bpm.engine.impl.migration.batch;
 
 import org.camunda.bpm.engine.batch.Batch;
 import org.camunda.bpm.engine.impl.batch.AbstractBatchJobHandler;
+import org.camunda.bpm.engine.impl.batch.BatchEntity;
 import org.camunda.bpm.engine.impl.batch.BatchJobConfiguration;
 import org.camunda.bpm.engine.impl.batch.BatchJobContext;
 import org.camunda.bpm.engine.impl.batch.BatchJobDeclaration;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.jobexecutor.JobDeclaration;
@@ -28,11 +30,11 @@ import org.camunda.bpm.engine.impl.json.MigrationBatchConfigurationJsonConverter
 import org.camunda.bpm.engine.impl.migration.MigrationPlanExecutionBuilderImpl;
 import org.camunda.bpm.engine.impl.persistence.entity.ByteArrayEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.JobEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.migration.MigrationPlanExecutionBuilder;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,20 +60,11 @@ public class MigrationBatchJobHandler extends AbstractBatchJobHandler<MigrationB
   @Override
   protected MigrationBatchConfiguration createJobConfiguration(MigrationBatchConfiguration configuration, List<String> processIdsForJob) {
     return new MigrationBatchConfiguration(
-        processIdsForJob,
+        processIdsForJob, null,
         configuration.getMigrationPlan(),
         configuration.isSkipCustomListeners(),
         configuration.isSkipIoMappings()
     );
-  }
-
-  @Override
-  protected void postProcessJob(MigrationBatchConfiguration configuration, JobEntity job) {
-    CommandContext commandContext = Context.getCommandContext();
-    String sourceProcessDefinitionId = configuration.getMigrationPlan().getSourceProcessDefinitionId();
-
-    ProcessDefinitionEntity processDefinition = getProcessDefinition(commandContext, sourceProcessDefinitionId);
-    job.setDeploymentId(processDefinition.getDeploymentId());
   }
 
   @Override
@@ -99,6 +92,20 @@ public class MigrationBatchJobHandler extends AbstractBatchJobHandler<MigrationB
     ((MigrationPlanExecutionBuilderImpl) executionBuilder).execute(false);
 
     commandContext.getByteArrayManager().delete(configurationEntity);
+  }
+
+  @Override
+  protected boolean doCreateJobs(BatchEntity batch, MigrationBatchConfiguration configuration) {
+    List<DeploymentMapping> idMappings = configuration.getIdMappings();
+    if (idMappings == null || idMappings.isEmpty()) {
+      // create mapping for legacy seed jobs
+      String sourceProcessDefinitionId = configuration.getMigrationPlan().getSourceProcessDefinitionId();
+      String deploymentId = getProcessDefinition(Context.getCommandContext(), sourceProcessDefinitionId)
+          .getDeploymentId();
+      idMappings = Arrays.asList(new DeploymentMapping(deploymentId, configuration.getIds().size()));
+      configuration.setIdMappings(idMappings);
+    }
+    return super.doCreateJobs(batch, configuration);
   }
 
   protected ProcessDefinitionEntity getProcessDefinition(CommandContext commandContext, String processDefinitionId) {

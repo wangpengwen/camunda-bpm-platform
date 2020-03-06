@@ -53,7 +53,7 @@ public class SetJobRetriesJobHandler extends AbstractBatchJobHandler<SetRetriesB
 
   @Override
   protected SetRetriesBatchConfiguration createJobConfiguration(SetRetriesBatchConfiguration configuration, List<String> jobIds) {
-    return new SetRetriesBatchConfiguration(jobIds, configuration.getRetries());
+    return new SetRetriesBatchConfiguration(jobIds, null, configuration.getRetries());
   }
 
   @Override
@@ -78,4 +78,5 @@ public class SetJobRetriesJobHandler extends AbstractBatchJobHandler<SetRetriesB
 
     commandContext.getByteArrayManager().delete(configurationEntity);
   }
+
 }

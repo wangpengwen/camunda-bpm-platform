@@ -32,10 +32,11 @@ public class MigrationBatchConfiguration extends BatchConfiguration {
   }
 
   public MigrationBatchConfiguration(List<String> ids,
+                                     List<DeploymentMapping> mappings,
                                      MigrationPlan migrationPlan,
                                      boolean isSkipCustomListeners,
                                      boolean isSkipIoMappings) {
-    super(ids);
+    super(ids, mappings);
     this.migrationPlan = migrationPlan;
     this.isSkipCustomListeners = isSkipCustomListeners;
     this.isSkipIoMappings = isSkipIoMappings;

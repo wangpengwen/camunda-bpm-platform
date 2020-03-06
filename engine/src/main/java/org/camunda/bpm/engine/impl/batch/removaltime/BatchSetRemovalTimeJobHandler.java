@@ -127,6 +127,7 @@ public class BatchSetRemovalTimeJobHandler extends AbstractBatchJobHandler<SetRe
     return JOB_DECLARATION;
   }
 
+  @Override
   protected SetRemovalTimeBatchConfiguration createJobConfiguration(SetRemovalTimeBatchConfiguration configuration, List<String> batchIds) {
     return new SetRemovalTimeBatchConfiguration(batchIds)
       .setRemovalTime(configuration.getRemovalTime())

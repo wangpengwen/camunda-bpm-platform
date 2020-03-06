@@ -86,7 +86,7 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceIds(Arrays.asList(processInstance1.getId(), processInstance2.getId())).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
 
 
@@ -158,10 +158,10 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceIds(Arrays.asList(processInstance1.getId(), processInstance2.getId())).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
     Batch activateprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceIds(Arrays.asList(processInstance1.getId(), processInstance2.getId())).activateAsync();
-    helper.executeSeedJob(activateprocess);
+    helper.completeSeedJobs(activateprocess);
     helper.executeJobs(activateprocess);
 
 
@@ -182,7 +182,7 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceQuery(runtimeService.createProcessInstanceQuery().active()).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
 
 
@@ -204,10 +204,10 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceQuery(runtimeService.createProcessInstanceQuery().active()).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
     Batch activateprocess = runtimeService.updateProcessInstanceSuspensionState().byProcessInstanceQuery(runtimeService.createProcessInstanceQuery().suspended()).activateAsync();
-    helper.executeSeedJob(activateprocess);
+    helper.completeSeedJobs(activateprocess);
     helper.executeJobs(activateprocess);
 
 
@@ -229,7 +229,7 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byHistoricProcessInstanceQuery(historyService.createHistoricProcessInstanceQuery().processInstanceIds(Sets.newHashSet(processInstance1.getId(), processInstance2.getId()))).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
 
 
@@ -253,10 +253,10 @@ public class UpdateProcessInstancesSuspendStateAsyncTest {
 
     // when
     Batch suspendprocess = runtimeService.updateProcessInstanceSuspensionState().byHistoricProcessInstanceQuery(historyService.createHistoricProcessInstanceQuery().processInstanceIds(Sets.newHashSet(processInstance1.getId(), processInstance2.getId()))).suspendAsync();
-    helper.executeSeedJob(suspendprocess);
+    helper.completeSeedJobs(suspendprocess);
     helper.executeJobs(suspendprocess);
     Batch activateprocess = runtimeService.updateProcessInstanceSuspensionState().byHistoricProcessInstanceQuery(historyService.createHistoricProcessInstanceQuery().processInstanceIds(Sets.newHashSet(processInstance1.getId(), processInstance2.getId()))).activateAsync();
-    helper.executeSeedJob(activateprocess);
+    helper.completeSeedJobs(activateprocess);
     helper.executeJobs(activateprocess);
 
 

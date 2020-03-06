@@ -21,6 +21,7 @@ import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotEmpty;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,11 +31,11 @@ import org.camunda.bpm.engine.batch.Batch;
 import org.camunda.bpm.engine.impl.ProcessEngineLogger;
 import org.camunda.bpm.engine.impl.RestartProcessInstanceBuilderImpl;
 import org.camunda.bpm.engine.impl.RestartProcessInstancesBatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.batch.builder.BatchBuilder;
 import org.camunda.bpm.engine.impl.cmd.AbstractProcessInstanceModificationCommand;
 import org.camunda.bpm.engine.impl.cmd.AbstractRestartProcessInstanceCmd;
 import org.camunda.bpm.engine.impl.cmd.CommandLogger;
-import org.camunda.bpm.engine.impl.interceptor.Command;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.interceptor.CommandExecutor;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -76,7 +77,7 @@ public class RestartProcessInstancesBatchCmd extends AbstractRestartProcessInsta
 
     return new BatchBuilder(commandContext)
         .type(Batch.TYPE_PROCESS_INSTANCE_RESTART)
-        .config(getConfiguration(collectedInstanceIds))
+        .config(getConfiguration(collectedInstanceIds, processDefinition.getDeploymentId()))
         .permission(BatchPermissions.CREATE_BATCH_RESTART_PROCESS_INSTANCES)
         .tenantId(tenantId)
         .operationLogHandler((ctx, instanceCount) ->
@@ -90,9 +91,10 @@ public class RestartProcessInstancesBatchCmd extends AbstractRestartProcessInsta
     }
   }
 
-  public BatchConfiguration getConfiguration(Collection<String> instanceIds) {
+  public BatchConfiguration getConfiguration(Collection<String> instanceIds, String deploymentId) {
     return new RestartProcessInstancesBatchConfiguration(
         new ArrayList<>(instanceIds),
+        Arrays.asList(new DeploymentMapping(deploymentId, instanceIds.size())),
         builder.getInstructions(),
         builder.getProcessDefinitionId(),
         builder.isInitialVariables(),

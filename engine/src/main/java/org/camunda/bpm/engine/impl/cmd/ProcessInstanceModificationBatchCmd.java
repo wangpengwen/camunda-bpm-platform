@@ -21,6 +21,7 @@ import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotEmpty;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,7 +32,7 @@ import org.camunda.bpm.engine.impl.ModificationBatchConfiguration;
 import org.camunda.bpm.engine.impl.ModificationBuilderImpl;
 import org.camunda.bpm.engine.impl.batch.builder.BatchBuilder;
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
-import org.camunda.bpm.engine.impl.interceptor.Command;
+import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 
@@ -67,7 +68,7 @@ public class ProcessInstanceModificationBatchCmd extends AbstractModificationCmd
 
     return new BatchBuilder(commandContext)
         .type(Batch.TYPE_PROCESS_INSTANCE_MODIFICATION)
-        .config(getConfiguration(collectedInstanceIds))
+        .config(getConfiguration(collectedInstanceIds, processDefinition.getDeploymentId()))
         .tenantId(tenantId)
         .permission(BatchPermissions.CREATE_BATCH_MODIFY_PROCESS_INSTANCES)
         .operationLogHandler((ctx, instanceCount) ->
@@ -75,8 +76,9 @@ public class ProcessInstanceModificationBatchCmd extends AbstractModificationCmd
         .build();
   }
 
-  public BatchConfiguration getConfiguration(Collection<String> instanceIds) {
+  public BatchConfiguration getConfiguration(Collection<String> instanceIds, String deploymentId) {
     return new ModificationBatchConfiguration(new ArrayList<>(instanceIds),
+        Arrays.asList(new DeploymentMapping(deploymentId, instanceIds.size())),
         builder.getProcessDefinitionId(),
         builder.getInstructions(),
         builder.isSkipCustomListeners(),
