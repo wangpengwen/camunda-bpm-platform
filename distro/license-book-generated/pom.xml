@@ -78,6 +78,7 @@
 	          <arguments>
 	          <!-- TODO: configure from property -->
 	            <argument>${project.build.directory}/dependency</argument>
+	            <argument>${project.basedir}/src/main/licenses</argument>
 	          </arguments>
 	        </configuration>
           </execution>

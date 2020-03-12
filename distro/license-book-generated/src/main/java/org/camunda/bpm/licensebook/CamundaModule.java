@@ -11,4 +11,13 @@ public class CamundaModule {
 	public String getName() {
 		return name;
 	}
+	
+	public static CamundaModule fromDependencyName(String name) {
+		return new CamundaModule(name);
+	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
 }
