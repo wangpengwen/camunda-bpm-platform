@@ -1,0 +1,89 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.camunda.bpm</groupId>
+    <artifactId>camunda-database-settings</artifactId>
+    <relativePath>../../database</relativePath>
+    <version>7.13.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>license-book-generated</artifactId>
+
+  <name>camunda BPM - Generated License Book</name>
+  
+  <dependencies>
+	  <dependency>
+  		<groupId>org.camunda.bpm.tomcat</groupId>
+  		<artifactId>camunda-tomcat-assembly</artifactId>
+  		<version>${project.version}</version>
+  		<type>txt</type>
+		<classifier>third-party-dependencies</classifier>  
+  	</dependency>
+	  <dependency>
+  		<groupId>org.camunda.bpm.webapp</groupId>
+  		<artifactId>camunda-webapp-tomcat</artifactId>
+  		<version>${project.version}</version>
+  		<type>txt</type>
+		<classifier>third-party-dependencies</classifier>  
+  	</dependency>
+	  <dependency>
+  		<groupId>org.camunda.bpm.webapp</groupId>
+  		<artifactId>camunda-webapp-tomcat-standalone</artifactId>
+  		<version>${project.version}</version>
+  		<type>txt</type>
+		<classifier>third-party-dependencies</classifier>  
+  	</dependency>
+  	
+  	
+  	<!-- generation -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+  	<!-- TODO: check phase -->
+    <plugins>
+      <plugin>
+      	<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-dependency-plugin</artifactId>
+		<executions>
+		  <execution>
+		    <id>unpack-deps-files</id>
+		    <goals>
+				<goal>copy-dependencies</goal>
+			</goals>
+			<phase>generate-sources</phase>
+			<configuration>
+			  <includeClassifiers>third-party-dependencies</includeClassifiers><!-- TODO: das hier geht nicht wie gewünscht; 
+			  er versucht damit für alle dependencies diesen Classifier herunterzuladen-->
+			</configuration>
+		  </execution>
+		</executions>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>prepare-package</phase>
+	        <configuration>
+	        	<mainClass>org.camunda.bpm.licensebook.LicenseBookGenerator</mainClass>
+	          <arguments>
+	          <!-- TODO: configure from property -->
+	            <argument>${project.build.directory}/dependency</argument>
+	          </arguments>
+	        </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

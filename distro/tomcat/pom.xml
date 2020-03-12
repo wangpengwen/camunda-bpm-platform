@@ -35,5 +35,58 @@
         <module>webapp-standalone</module>
       </modules>
     </profile>
+    <profile>
+    	<id>third-party-dependencies</id>
+    	
+    	<build>
+    	<!-- org.apache.maven.plugins:maven-dependency-plugin:3.1.2:list -->
+    	<!-- TODO: indentation -->
+    		<plugins>
+    			<plugin>
+    				<groupId>org.apache.maven.plugins</groupId>
+    				<artifactId>maven-dependency-plugin</artifactId>
+    				<executions>
+    					<execution>
+    						<id>list-deps</id>
+    						<goals>
+    							<goal>list</goal>
+    						</goals>
+    						<phase>package</phase>
+    						<configuration>
+    							<includeScope>compile</includeScope>
+    							<outputScope>false</outputScope>
+    							<sort>true</sort>
+    							<excludeGroupIds>org.camunda</excludeGroupIds>
+    							<outputFile>${project.build.directory}/dependencies.txt</outputFile>
+    						</configuration>
+    					</execution>
+    				</executions>
+    			</plugin>
+    			
+    			<plugin>
+				    <groupId>org.codehaus.mojo</groupId>
+				    <artifactId>build-helper-maven-plugin</artifactId>
+				    <executions>
+				      <execution>
+				        <id>attach-deps</id>
+				        <phase>package</phase>
+				        <goals>
+				          <goal>attach-artifact</goal>
+				        </goals>
+				        <configuration>
+				          <artifacts>
+				            <artifact>
+				              <file>${project.build.directory}/dependencies.txt</file>
+				              <type>txt</type>
+				              <classifier>third-party-dependencies</classifier>
+				            </artifact>
+				          </artifacts>
+				        </configuration>
+				      </execution>
+				    </executions>
+				  </plugin>
+    		</plugins>
+    	</build>
+    </profile>
   </profiles>
 </project>
