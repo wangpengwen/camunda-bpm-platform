@@ -1,9 +1,10 @@
 package org.camunda.bpm.licensebook;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MavenArtifact {
+public class MavenArtifact implements Comparable<MavenArtifact> {
 	
 	protected static final Pattern CANONICAL_REGEX = Pattern.compile("(.+):(.+):(.+):(.+)");
 
@@ -79,8 +80,8 @@ public class MavenArtifact {
 		Matcher matcher = CANONICAL_REGEX.matcher(canonical.trim());
 		
 		if (!matcher.matches()) {
-			throw new RuntimeException("Canonical Maven string " + canonical + 
-					" does not match expected format groupId:artifactId:type:version");
+			throw new RuntimeException("Canonical Maven string \"" + canonical + 
+					"\" does not match expected format groupId:artifactId:type:version");
 		}
 
 		String groupId = matcher.group(1);
@@ -94,5 +95,10 @@ public class MavenArtifact {
 	@Override
 	public String toString() {
 		return String.join(":", groupId, artifactId, type, version);
+	}
+
+	@Override
+	public int compareTo(MavenArtifact o) {
+		return toString().compareTo(o.toString());
 	}
 }

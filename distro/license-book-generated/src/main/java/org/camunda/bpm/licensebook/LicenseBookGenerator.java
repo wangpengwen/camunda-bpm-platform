@@ -41,7 +41,19 @@ public class LicenseBookGenerator {
 			CamundaModule camundaModule = CamundaModule.fromDependencyName(fileName);
 			
 			for (String dep : dependencyCoordinates) {
-				MavenArtifact mavenArtifact = MavenArtifact.fromCanonicalString(dep);
+				if (dep.trim().isEmpty()) {
+					continue;
+				}
+				
+				MavenArtifact mavenArtifact;
+				
+				try {
+					mavenArtifact = MavenArtifact.fromCanonicalString(dep);
+					
+				} catch (Exception e) {
+					// TODO: tolerating file formatting problems for now; change this for the proper solution
+					continue;
+				}
 				
 				List<CamundaModule> usingModules = artifactsUsage.computeIfAbsent(mavenArtifact, k -> new ArrayList<>());
 				usingModules.add(camundaModule);
@@ -49,6 +61,5 @@ public class LicenseBookGenerator {
 		}
 		
 		System.out.println(artifactsUsage);
-		
 	}
 }
