@@ -13,6 +13,10 @@
   <packaging>war</packaging>
   <name>camunda BPM - webapp - Tomcat Standalone</name>
 
+  <properties>
+    <skip-third-party-bom>false</skip-third-party-bom>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>

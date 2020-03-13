@@ -1,0 +1,3 @@
+https://github.com/FasterXML/jackson-annotations
+Copyright: various authors 
+Licensed under Apache 2.0
