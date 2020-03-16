@@ -13,18 +13,6 @@
   <name>camunda BPM - Generated License Book</name>
   
   <dependencies>
-<!-- 	  <dependency> -->
-<!--   		<groupId>org.camunda.bpm.tomcat</groupId> -->
-<!--   		<artifactId>camunda-tomcat-assembly</artifactId> -->
-<!--   		<version>${project.version}</version> -->
-<!--   		<type>tar.gz</type> -->
-<!--   	</dependency> -->
-<!-- 	  <dependency> -->
-<!--   		<groupId>org.camunda.bpm.webapp</groupId> -->
-<!--   		<artifactId>camunda-webapp-tomcat</artifactId> -->
-<!--   		<version>${project.version}</version> -->
-<!--   		<type>pom</type> -->
-<!--   	</dependency> -->
 	  <dependency>
   		<groupId>org.camunda.bpm.tomcat</groupId>
   		<artifactId>camunda-tomcat-assembly</artifactId>
