@@ -31,6 +31,7 @@
 
   ],
   "tags": [
+    {"name": "Attachment"},
     {"name": "Deployment"},
     {"name": "Engine"},
     {"name": "Condition"},
