@@ -13,30 +13,103 @@
   <name>camunda BPM - Generated License Book</name>
   
   <dependencies>
-	  <dependency>
-  		<groupId>org.camunda.bpm.tomcat</groupId>
-  		<artifactId>camunda-tomcat-assembly</artifactId>
-  		<version>${project.version}</version>
-  		<type>txt</type>
-		<classifier>third-party-dependencies</classifier>  
-  	</dependency>
-	  <dependency>
-  		<groupId>org.camunda.bpm.webapp</groupId>
-  		<artifactId>camunda-webapp-tomcat</artifactId>
-  		<version>${project.version}</version>
-  		<type>txt</type>
-		<classifier>third-party-dependencies</classifier>  
-  	</dependency>
-	  <dependency>
-  		<groupId>org.camunda.bpm.webapp</groupId>
-  		<artifactId>camunda-webapp-tomcat-standalone</artifactId>
-  		<version>${project.version}</version>
-  		<type>txt</type>
-		<classifier>third-party-dependencies</classifier>  
-  	</dependency>
-  	
-  	
-  	<!-- generation -->
+    <!-- tomcat distro -->
+    <dependency>
+      <groupId>org.camunda.bpm.tomcat</groupId>
+      <artifactId>camunda-tomcat-assembly</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.webapp</groupId>
+      <artifactId>camunda-webapp-tomcat</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.webapp</groupId>
+      <artifactId>camunda-webapp-tomcat-standalone</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- Jboss distro -->
+    <dependency>
+      <groupId>org.camunda.bpm.jboss</groupId>
+      <artifactId>camunda-jboss-modules</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.webapp</groupId>
+      <artifactId>camunda-webapp-jboss</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.webapp</groupId>
+      <artifactId>camunda-webapp-jboss-standalone</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- Wildfly distro -->
+    <dependency>
+      <groupId>org.camunda.bpm.wildfly</groupId>
+      <artifactId>camunda-wildfly-assembly</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.wildfly</groupId>
+      <artifactId>camunda-wildfly-modules</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- core webapp -->
+    <dependency>
+      <groupId>org.camunda.bpm.webapp</groupId>
+      <artifactId>camunda-webapp</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- REST API -->
+    <dependency>
+      <groupId>org.camunda.bpm</groupId>
+      <artifactId>camunda-engine-rest</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- Run -->
+    <dependency>
+      <groupId>org.camunda.bpm.run</groupId>
+      <artifactId>camunda-bpm-run-modules-rest</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    <dependency>
+      <groupId>org.camunda.bpm.run</groupId>
+      <artifactId>camunda-bpm-run-modules-webapps</artifactId>
+      <version>${project.version}</version>
+      <type>txt</type>
+      <classifier>third-party-dependencies</classifier>  
+    </dependency>
+    
+    <!-- generation -->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -44,24 +117,24 @@
   </dependencies>
 
   <build>
-  	<!-- TODO: check phase -->
+    <!-- TODO: check phase -->
     <plugins>
       <plugin>
-      	<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-dependency-plugin</artifactId>
-		<executions>
-		  <execution>
-		    <id>unpack-deps-files</id>
-		    <goals>
-				<goal>copy-dependencies</goal>
-			</goals>
-			<phase>generate-sources</phase>
-			<configuration>
-			  <includeClassifiers>third-party-dependencies</includeClassifiers><!-- TODO: das hier geht nicht wie gewünscht; 
-			  er versucht damit für alle dependencies diesen Classifier herunterzuladen-->
-			</configuration>
-		  </execution>
-		</executions>
+        <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+      <execution>
+        <id>unpack-deps-files</id>
+        <goals>
+        <goal>copy-dependencies</goal>
+      </goals>
+      <phase>generate-sources</phase>
+      <configuration>
+        <includeClassifiers>third-party-dependencies</includeClassifiers><!-- TODO: das hier geht nicht wie gewünscht; 
+        er versucht damit für alle dependencies diesen Classifier herunterzuladen-->
+      </configuration>
+      </execution>
+    </executions>
       </plugin>
       
       <plugin>
@@ -73,15 +146,15 @@
               <goal>java</goal>
             </goals>
             <phase>prepare-package</phase>
-	        <configuration>
-	        	<mainClass>org.camunda.bpm.licensebook.LicenseBookGenerator</mainClass>
-	          <arguments>
-	          <!-- TODO: configure from property -->
-	            <argument>${project.build.directory}/dependency</argument>
-	            <argument>${project.basedir}/src/main/licenses</argument>
-	            <argument>${project.build.directory}/generated-book.txt</argument>
-	          </arguments>
-	        </configuration>
+          <configuration>
+            <mainClass>org.camunda.bpm.licensebook.LicenseBookGenerator</mainClass>
+            <arguments>
+            <!-- TODO: configure from property -->
+              <argument>${project.build.directory}/dependency</argument>
+              <argument>${project.basedir}/src/main/licenses</argument>
+              <argument>${project.build.directory}/generated-book.txt</argument>
+            </arguments>
+          </configuration>
           </execution>
         </executions>
       </plugin>
