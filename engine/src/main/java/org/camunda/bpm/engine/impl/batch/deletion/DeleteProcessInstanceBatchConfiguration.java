@@ -18,6 +18,7 @@ package org.camunda.bpm.engine.impl.batch.deletion;
 
 import java.util.List;
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 
 /**
  * Configuration object that is passed to the Job that will actually perform execution of

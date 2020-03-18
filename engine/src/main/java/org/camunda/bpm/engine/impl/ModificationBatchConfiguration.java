@@ -19,6 +19,7 @@ package org.camunda.bpm.engine.impl;
 import java.util.List;
 
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.cmd.AbstractProcessInstanceModificationCommand;
 
 public class ModificationBatchConfiguration extends BatchConfiguration {
@@ -27,6 +28,11 @@ public class ModificationBatchConfiguration extends BatchConfiguration {
   protected boolean skipCustomListeners;
   protected boolean skipIoMappings;
   protected String processDefinitionId;
+
+  public ModificationBatchConfiguration(List<String> ids, String processDefinitionId, List<AbstractProcessInstanceModificationCommand> instructions,
+      boolean skipCustomListeners, boolean skipIoMappings) {
+    this(ids, null, processDefinitionId, instructions, skipCustomListeners, skipIoMappings);
+  }
 
   public ModificationBatchConfiguration(List<String> ids, List<DeploymentMapping> mappings,
       String processDefinitionId, List<AbstractProcessInstanceModificationCommand> instructions,

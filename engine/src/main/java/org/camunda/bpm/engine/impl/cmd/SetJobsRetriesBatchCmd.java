@@ -17,7 +17,7 @@
 package org.camunda.bpm.engine.impl.cmd;
 
 import org.camunda.bpm.engine.impl.JobQueryImpl;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.BatchElementConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchElementConfiguration;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.runtime.JobQuery;
 
@@ -42,8 +42,6 @@ public class SetJobsRetriesBatchCmd extends AbstractSetJobsRetriesBatchCmd {
     BatchElementConfiguration elementConfiguration = new BatchElementConfiguration();
 
     if (ids != null) {
-      // TODO do we really want to do this? we practically did this previously
-      // because we ran the queries without authorization in the batch handlers
       commandContext.runWithoutAuthorization(() -> {
         JobQueryImpl query = new JobQueryImpl();
         query.jobIds(new HashSet<>(ids));

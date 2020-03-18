@@ -17,7 +17,8 @@
 package org.camunda.bpm.engine.impl.batch.deletion;
 
 import java.util.List;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
+
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.json.JsonObjectConverter;
 import org.camunda.bpm.engine.impl.util.JsonUtil;
 

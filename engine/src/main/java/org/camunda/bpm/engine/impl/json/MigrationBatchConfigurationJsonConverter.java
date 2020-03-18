@@ -16,7 +16,7 @@
  */
 package org.camunda.bpm.engine.impl.json;
 
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.migration.batch.MigrationBatchConfiguration;
 import org.camunda.bpm.engine.impl.util.JsonUtil;
 import com.google.gson.JsonObject;

@@ -16,7 +16,6 @@
  */
 package org.camunda.bpm.engine.impl;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.camunda.bpm.engine.batch.Batch;
@@ -25,8 +24,7 @@ import org.camunda.bpm.engine.impl.batch.BatchEntity;
 import org.camunda.bpm.engine.impl.batch.BatchJobConfiguration;
 import org.camunda.bpm.engine.impl.batch.BatchJobContext;
 import org.camunda.bpm.engine.impl.batch.BatchJobDeclaration;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
-import org.camunda.bpm.engine.impl.context.Context;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.jobexecutor.JobDeclaration;
 import org.camunda.bpm.engine.impl.json.ModificationBatchConfigurationJsonConverter;
@@ -77,11 +75,7 @@ public class ModificationBatchJobHandler extends AbstractBatchJobHandler<Modific
     List<DeploymentMapping> idMappings = configuration.getIdMappings();
     if (idMappings == null || idMappings.isEmpty()) {
       // create mapping for legacy seed jobs
-      String deploymentId = Context.getCommandContext().getProcessEngineConfiguration()
-          .getDeploymentCache().findDeployedProcessDefinitionById(configuration.getProcessDefinitionId())
-          .getDeploymentId();
-      idMappings = Arrays.asList(new DeploymentMapping(deploymentId, configuration.getIds().size()));
-      configuration.setIdMappings(idMappings);
+      createSingleDeploymentIdMappingForDefinition(configuration, configuration.getProcessDefinitionId());
     }
     return super.doCreateJobs(batch, configuration);
   }
@@ -94,7 +88,7 @@ public class ModificationBatchJobHandler extends AbstractBatchJobHandler<Modific
   @Override
   protected ModificationBatchConfiguration createJobConfiguration(ModificationBatchConfiguration configuration, List<String> processIdsForJob) {
     return new ModificationBatchConfiguration(
-        processIdsForJob, null,
+        processIdsForJob,
         configuration.getProcessDefinitionId(),
         configuration.getInstructions(),
         configuration.isSkipCustomListeners(),

@@ -17,6 +17,7 @@
 package org.camunda.bpm.engine.impl.migration.batch;
 
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.migration.MigrationPlan;
 
 import java.util.List;
@@ -29,6 +30,13 @@ public class MigrationBatchConfiguration extends BatchConfiguration {
 
   public MigrationBatchConfiguration(List<String> ids) {
     super(ids);
+  }
+
+  public MigrationBatchConfiguration(List<String> ids,
+      MigrationPlan migrationPlan,
+      boolean isSkipCustomListeners,
+      boolean isSkipIoMappings) {
+    this(ids, null, migrationPlan, isSkipCustomListeners, isSkipIoMappings);
   }
 
   public MigrationBatchConfiguration(List<String> ids,

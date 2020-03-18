@@ -22,8 +22,7 @@ import org.camunda.bpm.engine.impl.batch.BatchEntity;
 import org.camunda.bpm.engine.impl.batch.BatchJobConfiguration;
 import org.camunda.bpm.engine.impl.batch.BatchJobContext;
 import org.camunda.bpm.engine.impl.batch.BatchJobDeclaration;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
-import org.camunda.bpm.engine.impl.context.Context;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.jobexecutor.JobDeclaration;
 import org.camunda.bpm.engine.impl.json.MigrationBatchConfigurationJsonConverter;
@@ -31,10 +30,8 @@ import org.camunda.bpm.engine.impl.migration.MigrationPlanExecutionBuilderImpl;
 import org.camunda.bpm.engine.impl.persistence.entity.ByteArrayEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.MessageEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.migration.MigrationPlanExecutionBuilder;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -60,7 +57,7 @@ public class MigrationBatchJobHandler extends AbstractBatchJobHandler<MigrationB
   @Override
   protected MigrationBatchConfiguration createJobConfiguration(MigrationBatchConfiguration configuration, List<String> processIdsForJob) {
     return new MigrationBatchConfiguration(
-        processIdsForJob, null,
+        processIdsForJob,
         configuration.getMigrationPlan(),
         configuration.isSkipCustomListeners(),
         configuration.isSkipIoMappings()
@@ -99,19 +96,10 @@ public class MigrationBatchJobHandler extends AbstractBatchJobHandler<MigrationB
     List<DeploymentMapping> idMappings = configuration.getIdMappings();
     if (idMappings == null || idMappings.isEmpty()) {
       // create mapping for legacy seed jobs
-      String sourceProcessDefinitionId = configuration.getMigrationPlan().getSourceProcessDefinitionId();
-      String deploymentId = getProcessDefinition(Context.getCommandContext(), sourceProcessDefinitionId)
-          .getDeploymentId();
-      idMappings = Arrays.asList(new DeploymentMapping(deploymentId, configuration.getIds().size()));
-      configuration.setIdMappings(idMappings);
+      createSingleDeploymentIdMappingForDefinition(configuration,
+          configuration.getMigrationPlan().getSourceProcessDefinitionId());
     }
     return super.doCreateJobs(batch, configuration);
-  }
-
-  protected ProcessDefinitionEntity getProcessDefinition(CommandContext commandContext, String processDefinitionId) {
-    return commandContext.getProcessEngineConfiguration()
-        .getDeploymentCache()
-        .findDeployedProcessDefinitionById(processDefinitionId);
   }
 
 }

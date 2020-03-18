@@ -19,7 +19,7 @@ package org.camunda.bpm.engine.impl.cmd;
 import java.util.List;
 
 import org.camunda.bpm.engine.BadUserRequestException;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.BatchElementConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchElementConfiguration;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.util.EnsureUtil;
 

@@ -18,7 +18,7 @@ package org.camunda.bpm.engine.impl.batch.externaltask;
 
 import java.util.List;
 
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.DeploymentMapping;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.batch.SetRetriesBatchConfiguration;
 import org.camunda.bpm.engine.impl.json.JsonObjectConverter;
 import org.camunda.bpm.engine.impl.util.JsonUtil;

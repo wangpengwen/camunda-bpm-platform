@@ -19,7 +19,6 @@ package org.camunda.bpm.engine.impl.cmd.batch;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotEmpty;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import org.camunda.bpm.engine.BadUserRequestException;
@@ -30,7 +29,7 @@ import org.camunda.bpm.engine.history.UserOperationLogEntry;
 import org.camunda.bpm.engine.impl.HistoricProcessInstanceQueryImpl;
 import org.camunda.bpm.engine.impl.ProcessInstanceQueryImpl;
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.BatchElementConfiguration;
+import org.camunda.bpm.engine.impl.batch.BatchElementConfiguration;
 import org.camunda.bpm.engine.impl.batch.builder.BatchBuilder;
 import org.camunda.bpm.engine.impl.batch.deletion.DeleteProcessInstanceBatchConfiguration;
 import org.camunda.bpm.engine.impl.context.Context;
@@ -85,8 +84,6 @@ public class DeleteProcessInstanceBatchCmd implements Command<Batch> {
 
     List<String> processInstanceIds = this.getProcessInstanceIds();
     if (processInstanceIds != null && !processInstanceIds.isEmpty()) {
-      // TODO do we really want to do this? we practically did this previously
-      // because we ran the queries without authorization in the batch handlers
       Context.getCommandContext().runWithoutAuthorization(() -> {
         ProcessInstanceQueryImpl query = new ProcessInstanceQueryImpl();
         query.processInstanceIds(new HashSet<>(processInstanceIds));
@@ -106,12 +103,6 @@ public class DeleteProcessInstanceBatchCmd implements Command<Batch> {
     }
 
     return elementConfiguration;
-  }
-
-  protected static List<String> getInstancesForDeploymentId(CommandContext commandContext, Collection<String> processIds, String deploymentId) {
-    final ProcessInstanceQueryImpl processInstanceQueryToBeProcess = new ProcessInstanceQueryImpl();
-    processInstanceQueryToBeProcess.processInstanceIds(new HashSet<>(processIds)).deploymentId(deploymentId);
-    return commandContext.getExecutionManager().findProcessInstancesIdsByQueryCriteria(processInstanceQueryToBeProcess);
   }
 
   public List<String> getProcessInstanceIds() {

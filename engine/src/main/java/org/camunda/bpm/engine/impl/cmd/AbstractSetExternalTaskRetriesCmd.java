@@ -19,25 +19,17 @@ package org.camunda.bpm.engine.impl.cmd;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureNotContainsNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.camunda.bpm.engine.BadUserRequestException;
 import org.camunda.bpm.engine.history.UserOperationLogEntry;
 import org.camunda.bpm.engine.impl.ExternalTaskQueryImpl;
 import org.camunda.bpm.engine.impl.HistoricProcessInstanceQueryImpl;
 import org.camunda.bpm.engine.impl.ProcessInstanceQueryImpl;
-import org.camunda.bpm.engine.impl.batch.BatchConfiguration.BatchElementConfiguration;
-import org.camunda.bpm.engine.impl.db.DbEntity;
+import org.camunda.bpm.engine.impl.batch.BatchElementConfiguration;
 import org.camunda.bpm.engine.impl.interceptor.Command;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
-import org.camunda.bpm.engine.impl.persistence.entity.ExternalTaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.PropertyChange;
 
 public abstract class AbstractSetExternalTaskRetriesCmd<T> implements Command<T> {
@@ -101,21 +93,6 @@ public abstract class AbstractSetExternalTaskRetriesCmd<T> implements Command<T>
     }
 
     return elementConfiguration;
-  }
-
-  protected String getDeploymentId(CommandContext commandContext, ExternalTaskEntity externalTask) {
-    List<String> ids = commandContext.getDeploymentManager().findDeploymentIdsByProcessInstances(
-        Arrays.asList(externalTask.getProcessInstanceId()));
-    return ids.isEmpty() ? null : ids.get(0);
-  }
-
-  protected <S extends DbEntity> Map<String, List<String>> groupByDeploymentId(List<String> ids, Function<String, S> idMapperFunction,
-      Function<? super S, ? extends String> deploymentIdFunction, Function<? super S, ? extends String> entityIdFunction) {
-    return ids.stream().map(idMapperFunction)
-        .filter(Objects::nonNull)
-        .filter(e -> deploymentIdFunction.apply(e) != null)
-        .collect(Collectors.groupingBy(deploymentIdFunction,
-            Collectors.mapping(entityIdFunction, Collectors.toList())));
   }
 
   protected void writeUserOperationLog(CommandContext commandContext, int numInstances,

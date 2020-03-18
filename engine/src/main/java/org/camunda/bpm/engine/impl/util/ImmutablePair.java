@@ -58,7 +58,7 @@ public class ImmutablePair<L, R> implements Entry<L, R>, Serializable, Comparabl
   }
 
   /**
-   * Create a pair of comparable elements.
+   * Create a pair of elements.
    *
    * @param left
    *          the left element

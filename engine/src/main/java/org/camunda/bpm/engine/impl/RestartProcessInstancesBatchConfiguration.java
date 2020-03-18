@@ -19,6 +19,7 @@ package org.camunda.bpm.engine.impl;
 import java.util.List;
 
 import org.camunda.bpm.engine.impl.batch.BatchConfiguration;
+import org.camunda.bpm.engine.impl.batch.DeploymentMapping;
 import org.camunda.bpm.engine.impl.cmd.AbstractProcessInstanceModificationCommand;
 
 /**
@@ -34,6 +35,12 @@ public class RestartProcessInstancesBatchConfiguration extends BatchConfiguratio
   protected boolean skipCustomListeners;
   protected boolean skipIoMappings;
   protected boolean withoutBusinessKey;
+
+  public RestartProcessInstancesBatchConfiguration(List<String> processInstanceIds,
+      List<AbstractProcessInstanceModificationCommand> instructions, String processDefinitionId,
+      boolean initialVariables, boolean skipCustomListeners, boolean skipIoMappings, boolean withoutBusinessKey) {
+    this(processInstanceIds, null, instructions, processDefinitionId, initialVariables, skipCustomListeners, skipIoMappings, withoutBusinessKey);
+  }
 
   public RestartProcessInstancesBatchConfiguration(List<String> processInstanceIds, List<DeploymentMapping> mappings,
       List<AbstractProcessInstanceModificationCommand> instructions, String processDefinitionId,
