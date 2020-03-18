@@ -67,7 +67,6 @@ import org.camunda.bpm.engine.impl.persistence.entity.PropertyChange;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.camunda.bpm.engine.impl.pvm.PvmScope;
-import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.runtime.CompensationBehavior;
 import org.camunda.bpm.engine.impl.util.ClockUtil;
 import org.camunda.bpm.engine.management.JobDefinition;
@@ -433,10 +432,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
       sourceActivityInstanceId = sourceExecution.getActivityInstanceId();
       if (sourceActivityInstanceId == null && sourceExecution.getActivity() != null && sourceExecution.getTransition() == null) {
-        ActivityImpl activity = sourceExecution.getActivity();
-//        if (activity.getActivityBehavior() instanceof NoneStartEventActivityBehavior) {
-          sourceActivityInstanceId = sourceExecution.getId();
-//        }
+        sourceActivityInstanceId = sourceExecution.getId();
       }
 
     } else if (sourceVariableScope instanceof TaskEntity) {
