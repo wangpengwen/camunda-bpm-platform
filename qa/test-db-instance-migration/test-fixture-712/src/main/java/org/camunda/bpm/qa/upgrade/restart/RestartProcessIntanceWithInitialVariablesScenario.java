@@ -16,8 +16,10 @@
  */
 package org.camunda.bpm.qa.upgrade.restart;
 
+import org.camunda.bpm.engine.ManagementService;
 import org.camunda.bpm.engine.ProcessEngine;
 import org.camunda.bpm.engine.RuntimeService;
+import org.camunda.bpm.engine.runtime.Job;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.variable.Variables;
@@ -46,11 +48,18 @@ public class RestartProcessIntanceWithInitialVariablesScenario {
         runtimeService.setVariable(processInstanceWithInitialVariables.getId(), "var1", "value2");
         runtimeService.setVariableLocal(processInstanceWithInitialVariables.getId(), "local1", "foo1");
 
-        businessKey = "ProcessIntance";
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("asyncBeforeStartProcess", businessKey);
-        
-        runtimeService.setVariable(processInstance.getId(), "var2", "value1");
-        runtimeService.setVariableLocal(processInstance.getId(), "local2", "foo2");
+        ManagementService managementService = engine.getManagementService();
+        Job firstJob = managementService.createJobQuery().processDefinitionKey("asyncBeforeStartProcess").singleResult();
+        try {
+          managementService.executeJob(firstJob.getId());
+        } catch (Exception e) {
+          // ignore
+        }
+//        businessKey = "ProcessIntance";
+//        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("asyncBeforeStartProcess", businessKey);
+//        
+//        runtimeService.setVariable(processInstance.getId(), "var2", "value1");
+//        runtimeService.setVariableLocal(processInstance.getId(), "local2", "foo2");
       }
     };
   }
