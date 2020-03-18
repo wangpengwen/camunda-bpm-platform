@@ -16,6 +16,7 @@
  */
 package org.camunda.bpm.engine.impl.cfg.auth;
 
+import static org.camunda.bpm.engine.ProcessEngineConfiguration.HISTORY_REMOVAL_TIME_STRATEGY_START;
 import static org.camunda.bpm.engine.authorization.Authorization.AUTH_TYPE_GRANT;
 import static org.camunda.bpm.engine.authorization.Permissions.ALL;
 import static org.camunda.bpm.engine.authorization.Permissions.DELETE;
@@ -30,6 +31,7 @@ import static org.camunda.bpm.engine.authorization.Resources.USER;
 import static org.camunda.bpm.engine.impl.util.EnsureUtil.ensureValidIndividualResourceId;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.camunda.bpm.engine.IdentityService;
@@ -37,6 +39,7 @@ import org.camunda.bpm.engine.authorization.HistoricTaskPermissions;
 import org.camunda.bpm.engine.authorization.Permission;
 import org.camunda.bpm.engine.authorization.Resource;
 import org.camunda.bpm.engine.authorization.TaskPermissions;
+import org.camunda.bpm.engine.delegate.DelegateTask;
 import org.camunda.bpm.engine.filter.Filter;
 import org.camunda.bpm.engine.identity.Group;
 import org.camunda.bpm.engine.identity.Tenant;
@@ -44,10 +47,13 @@ import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.db.entitymanager.DbEntityManager;
+import org.camunda.bpm.engine.impl.history.event.HistoricProcessInstanceEventEntity;
 import org.camunda.bpm.engine.impl.identity.Authentication;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.AuthorizationManager;
+import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
+import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.camunda.bpm.engine.repository.DecisionDefinition;
 import org.camunda.bpm.engine.repository.DecisionRequirementsDefinition;
 import org.camunda.bpm.engine.repository.Deployment;
@@ -181,9 +187,7 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
 
       // create (or update) an authorization for the new assignee.
 
-      String taskId = task.getId();
-
-      return createOrUpdateAuthorizationByUserId(taskId, newAssignee);
+      return createOrUpdateAuthorizationByUserId(task, newAssignee);
     }
 
     return null;
@@ -196,9 +200,8 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
           newOwner);
 
       // create (or update) an authorization for the new owner.
-      String taskId = task.getId();
 
-      return createOrUpdateAuthorizationByUserId(taskId, newOwner);
+      return createOrUpdateAuthorizationByUserId(task, newOwner);
     }
 
     return null;
@@ -211,9 +214,7 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
     ensureValidIndividualResourceId("Cannot grant default authorization for identity link to user " + userId,
         userId);
 
-    String taskId = task.getId();
-
-    return createOrUpdateAuthorizationByUserId(taskId, userId);
+    return createOrUpdateAuthorizationByUserId(task, userId);
   }
 
   public AuthorizationEntity[] newTaskGroupIdentityLink(Task task, String groupId, String type) {
@@ -223,9 +224,8 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
 
     // create (or update) an authorization for the given group
     // whenever a new user identity link will be added
-    String taskId = task.getId();
 
-    return createOrUpdateAuthorizationByGroupId(taskId, groupId);
+    return createOrUpdateAuthorizationByGroupId(task, groupId);
   }
 
   public AuthorizationEntity[] deleteTaskUserIdentityLink(Task task, String userId, String type) {
@@ -250,14 +250,12 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
 
   // helper //////////////////////////////////////////////////////////////
 
-  protected AuthorizationEntity[] createOrUpdateAuthorizationByGroupId(String taskId,
-                                                                       String groupId) {
-    return createOrUpdateAuthorization(taskId, groupId, null);
+  protected AuthorizationEntity[] createOrUpdateAuthorizationByGroupId(Task task, String groupId) {
+    return createOrUpdateAuthorization(task, groupId, null);
   }
 
-  protected AuthorizationEntity[] createOrUpdateAuthorizationByUserId(String taskId,
-                                                                      String userId) {
-    return createOrUpdateAuthorization(taskId, null, userId);
+  protected AuthorizationEntity[] createOrUpdateAuthorizationByUserId(Task task, String userId) {
+    return createOrUpdateAuthorization(task, null, userId);
   }
 
   /**
@@ -273,8 +271,11 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
    *             UPDATE permission is provided
    *         ->  Add READ on HISTORIC_TASK
    */
-  protected AuthorizationEntity[] createOrUpdateAuthorization(String taskId, String groupId,
+  protected AuthorizationEntity[] createOrUpdateAuthorization(Task task, String groupId,
                                                               String userId) {
+
+    String taskId = task.getId();
+
     AuthorizationEntity runtimeAuthorization = getGrantAuthorization(taskId, userId, groupId, TASK);
 
     runtimeAuthorization =
@@ -292,8 +293,59 @@ public class DefaultAuthorizationProvider implements ResourceAuthorizationProvid
           updateAuthorization(historyAuthorization, userId, groupId, HISTORIC_TASK,
               taskId, HistoricTaskPermissions.READ);
 
+      String rootProcessInstanceId = getRootProcessInstanceId(task);
+
+      historyAuthorization.setRootProcessInstanceId(rootProcessInstanceId);
+
+      if (isHistoryRemovalTimeStrategyStart()) {
+        Date removalTime = calculateRemovalTime(rootProcessInstanceId);
+        historyAuthorization.setRemovalTime(removalTime);
+
+      }
+
       return new AuthorizationEntity[]{ runtimeAuthorization, historyAuthorization };
     }
+  }
+
+  protected String getRootProcessInstanceId(Task task) {
+    ExecutionEntity execution = (ExecutionEntity) ((DelegateTask) task).getExecution();
+
+    return execution.getRootProcessInstanceId();
+  }
+
+  protected Date calculateRemovalTime(String rootProcessInstanceId) {
+    HistoricProcessInstanceEventEntity rootProcessInstance =
+        findHistoricProcessInstance(rootProcessInstanceId);
+
+      String processDefinitionId = rootProcessInstance.getProcessDefinitionId();
+
+      ProcessDefinition processDefinition = findProcessDefinitionById(processDefinitionId);
+
+      return Context.getProcessEngineConfiguration()
+          .getHistoryRemovalTimeProvider()
+          .calculateRemovalTime(rootProcessInstance, processDefinition);
+  }
+
+  protected boolean isHistoryRemovalTimeStrategyStart() {
+    return HISTORY_REMOVAL_TIME_STRATEGY_START.equals(getHistoryRemovalTimeStrategy());
+  }
+
+  protected String getHistoryRemovalTimeStrategy() {
+    return Context.getProcessEngineConfiguration()
+        .getHistoryRemovalTimeStrategy();
+  }
+
+  protected HistoricProcessInstanceEventEntity findHistoricProcessInstance(String rootProcessInstanceId) {
+    return Context.getCommandContext()
+        .getHistoricProcessInstanceManager()
+        .findHistoricProcessInstance(rootProcessInstanceId);
+  }
+
+  protected ProcessDefinition findProcessDefinitionById(String processDefinitionId) {
+    return Context.getCommandContext()
+        .getProcessEngineConfiguration()
+        .getDeploymentCache()
+        .findDeployedProcessDefinitionById(processDefinitionId);
   }
 
   protected boolean isHistoricInstancePermissionsEnabled() {

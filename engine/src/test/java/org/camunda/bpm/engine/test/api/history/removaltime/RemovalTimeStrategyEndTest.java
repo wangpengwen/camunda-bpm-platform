@@ -16,6 +16,8 @@
  */
 package org.camunda.bpm.engine.test.api.history.removaltime;
 
+import org.camunda.bpm.engine.authorization.Authorization;
+import org.camunda.bpm.engine.authorization.Resources;
 import org.camunda.bpm.engine.batch.Batch;
 import org.camunda.bpm.engine.batch.history.HistoricBatch;
 import org.camunda.bpm.engine.externaltask.LockedExternalTask;
@@ -347,6 +349,50 @@ public class RemovalTimeStrategyEndTest extends AbstractRemovalTimeTest {
 
     // then
     assertThat(historicTaskInstance.getRemovalTime(), is(removalTime));
+  }
+
+  @Test
+  public void shouldResolveHistoricTaskAuthorization() {
+    // given
+    processEngineConfiguration.setEnableHistoricInstancePermissions(true);
+
+    testRule.deploy(CALLING_PROCESS);
+
+    testRule.deploy(CALLED_PROCESS);
+
+    ClockUtil.setCurrentTime(START_DATE);
+
+    runtimeService.startProcessInstanceByKey(CALLING_PROCESS_KEY);
+
+    String taskId = taskService.createTaskQuery().singleResult().getId();
+
+    enabledAuth();
+    taskService.setAssignee(taskId, "myUserId");
+    disableAuth();
+
+    Authorization authorization = authorizationService.createAuthorizationQuery()
+        .resourceType(Resources.HISTORIC_TASK)
+        .singleResult();
+
+    // assume
+    assertThat(authorization.getRemovalTime(), nullValue());
+
+    ClockUtil.setCurrentTime(END_DATE);
+
+    // when
+    taskService.complete(taskId);
+
+    authorization = authorizationService.createAuthorizationQuery()
+        .resourceType(Resources.HISTORIC_TASK)
+        .singleResult();
+
+    Date removalTime = addDays(END_DATE, 5);
+
+    // then
+    assertThat(authorization.getRemovalTime(), is(removalTime));
+
+    // clear
+    clearAuthorization();
   }
 
   @Test
