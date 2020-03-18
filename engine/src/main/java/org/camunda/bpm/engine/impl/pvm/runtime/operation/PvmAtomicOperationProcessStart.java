@@ -32,8 +32,7 @@ public class PvmAtomicOperationProcessStart extends AbstractPvmEventAtomicOperat
 
   @Override
   public boolean isAsync(PvmExecutionImpl execution) {
-    ProcessInstanceStartContext startContext = execution.getProcessInstanceStartContext();
-    return startContext != null && startContext.isAsync();
+    return execution.getActivity().isAsyncBefore();
   }
 
   public boolean isAsyncCapable() {

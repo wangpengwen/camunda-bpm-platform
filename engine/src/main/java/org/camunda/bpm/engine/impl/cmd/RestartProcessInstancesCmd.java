@@ -39,7 +39,6 @@ import org.camunda.bpm.engine.impl.ProcessInstantiationBuilderImpl;
 import org.camunda.bpm.engine.impl.RestartProcessInstanceBuilderImpl;
 import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.context.ProcessApplicationContextUtil;
-import org.camunda.bpm.engine.impl.interceptor.Command;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.interceptor.CommandExecutor;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -197,20 +196,34 @@ public class RestartProcessInstancesCmd extends AbstractRestartProcessInstanceCm
     HistoryService historyService = commandContext.getProcessEngineConfiguration()
         .getHistoryService();
 
-    HistoricActivityInstance startActivityInstance = resolveStartActivityInstance(processInstance);
-
     HistoricDetailQueryImpl query =
         (HistoricDetailQueryImpl) historyService.createHistoricDetailQuery()
-            .variableUpdates()
-            .executionId(processInstance.getId())
-            .activityInstanceId(startActivityInstance.getId());
+        .variableUpdates()
+        .activityInstanceId(processInstance.getId())
+        .executionId(processInstance.getId())
+        .initial();
 
-    List<HistoricDetail> historicDetails = query
+    List<HistoricDetail> details = query
         .sequenceCounter(1)
         .list();
 
+    if (details.size() == 0) {
+      HistoricActivityInstance startActivityInstance = resolveStartActivityInstance(processInstance);
+
+      // instances created <= 7.12
+      if (startActivityInstance != null) {
+        HistoricDetailQueryImpl queryWithStartActivities = (HistoricDetailQueryImpl) historyService.createHistoricDetailQuery()
+                .variableUpdates()
+                .activityInstanceId(startActivityInstance.getId())
+                .executionId(processInstance.getId());
+        details.addAll(queryWithStartActivities
+               .sequenceCounter(1)
+               .list());
+      }
+    }
+
     VariableMap variables = new VariableMapImpl();
-    for (HistoricDetail detail : historicDetails) {
+    for (HistoricDetail detail : details) {
       HistoricVariableUpdate variableUpdate = (HistoricVariableUpdate) detail;
       variables.putValueTyped(variableUpdate.getVariableName(), variableUpdate.getTypedValue());
     }
@@ -253,10 +266,7 @@ public class RestartProcessInstancesCmd extends AbstractRestartProcessInstanceCm
         .asc()
         .list();
 
-    ensureNotEmpty("historicActivityInstances", historicActivityInstances);
-
-    HistoricActivityInstance startActivityInstance = historicActivityInstances.get(0);
-    return startActivityInstance;
+    return historicActivityInstances.size() > 0 ? historicActivityInstances.get(0) : null;
   }
 
 }

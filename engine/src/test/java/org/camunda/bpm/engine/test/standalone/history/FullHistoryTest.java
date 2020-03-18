@@ -152,7 +152,7 @@ public class FullHistoryTest {
     assertEquals("bytes", historicVariableUpdate.getVariableName());
     assertEquals(":-(", new String((byte[])historicVariableUpdate.getValue()));
     assertEquals(0, historicVariableUpdate.getRevision());
-    assertEquals(historicStartEvent.getId(), historicVariableUpdate.getActivityInstanceId());
+    assertEquals(processInstance.getProcessInstanceId(), historicVariableUpdate.getActivityInstanceId());
 
     // Variable is updated when process was in waitstate
     historicVariableUpdate = (HistoricVariableUpdate) historicDetails.get(1);
@@ -165,13 +165,13 @@ public class FullHistoryTest {
     assertEquals("character", historicVariableUpdate.getVariableName());
     assertEquals("a", historicVariableUpdate.getValue());
     assertEquals(0, historicVariableUpdate.getRevision());
-    assertEquals(historicStartEvent.getId(), historicVariableUpdate.getActivityInstanceId());
+    assertEquals(processInstance.getProcessInstanceId(), historicVariableUpdate.getActivityInstanceId());
 
     historicVariableUpdate = (HistoricVariableUpdate) historicDetails.get(3);
     assertEquals("number", historicVariableUpdate.getVariableName());
     assertEquals("one", historicVariableUpdate.getValue());
     assertEquals(0, historicVariableUpdate.getRevision());
-    assertEquals(historicStartEvent.getId(), historicVariableUpdate.getActivityInstanceId());
+    assertEquals(processInstance.getProcessInstanceId(), historicVariableUpdate.getActivityInstanceId());
 
     // Variable is updated when process was in waitstate
     historicVariableUpdate = (HistoricVariableUpdate) historicDetails.get(4);
@@ -185,7 +185,7 @@ public class FullHistoryTest {
     assertEquals("zVar1", historicVariableUpdate.getVariableName());
     assertEquals("Event: start", historicVariableUpdate.getValue());
     assertEquals(0, historicVariableUpdate.getRevision());
-    assertEquals(historicStartEvent.getId(), historicVariableUpdate.getActivityInstanceId());
+    assertEquals(processInstance.getProcessInstanceId(), historicVariableUpdate.getActivityInstanceId());
 
     // Variable set from transition take execution listener
     historicVariableUpdate = (HistoricVariableUpdate) historicDetails.get(6);

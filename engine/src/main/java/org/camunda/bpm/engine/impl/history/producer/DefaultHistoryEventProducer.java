@@ -67,6 +67,7 @@ import org.camunda.bpm.engine.impl.persistence.entity.PropertyChange;
 import org.camunda.bpm.engine.impl.persistence.entity.TaskEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.VariableInstanceEntity;
 import org.camunda.bpm.engine.impl.pvm.PvmScope;
+import org.camunda.bpm.engine.impl.pvm.process.ActivityImpl;
 import org.camunda.bpm.engine.impl.pvm.runtime.CompensationBehavior;
 import org.camunda.bpm.engine.impl.util.ClockUtil;
 import org.camunda.bpm.engine.management.JobDefinition;
@@ -429,7 +430,14 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     CaseExecutionEntity sourceCaseExecution = null;
     if (sourceVariableScope instanceof ExecutionEntity) {
       sourceExecution = (ExecutionEntity) sourceVariableScope;
+
       sourceActivityInstanceId = sourceExecution.getActivityInstanceId();
+      if (sourceActivityInstanceId == null && sourceExecution.getActivity() != null && sourceExecution.getTransition() == null) {
+        ActivityImpl activity = sourceExecution.getActivity();
+//        if (activity.getActivityBehavior() instanceof NoneStartEventActivityBehavior) {
+          sourceActivityInstanceId = sourceExecution.getId();
+//        }
+      }
 
     } else if (sourceVariableScope instanceof TaskEntity) {
       sourceExecution = ((TaskEntity) sourceVariableScope).getExecution();
@@ -460,6 +468,11 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
     // set source activity instance id
     evt.setActivityInstanceId(sourceActivityInstanceId);
+
+    if (sourceExecution != null && sourceExecution.getExecutionStartContext() != null) {
+      evt.setInitial(true);
+    }
+
 
     return evt;
   }
@@ -520,6 +533,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // Implementation ////////////////////////////////
 
+  @Override
   public HistoryEvent createProcessInstanceStartEvt(DelegateExecution execution) {
     final ExecutionEntity executionEntity = (ExecutionEntity) execution;
 
@@ -556,6 +570,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return evt;
   }
 
+  @Override
   public HistoryEvent createProcessInstanceUpdateEvt(DelegateExecution execution) {
     final ExecutionEntity executionEntity = (ExecutionEntity) execution;
 
@@ -593,6 +608,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return evt;
   }
 
+  @Override
   public HistoryEvent createProcessInstanceEndEvt(DelegateExecution execution) {
     final ExecutionEntity executionEntity = (ExecutionEntity) execution;
 
@@ -663,6 +679,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     }
   }
 
+  @Override
   public HistoryEvent createActivityInstanceStartEvt(DelegateExecution execution) {
     final ExecutionEntity executionEntity = (ExecutionEntity) execution;
 
@@ -717,6 +734,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
   }
 
 
+  @Override
   public HistoryEvent createActivityInstanceEndEvt(DelegateExecution execution) {
     final ExecutionEntity executionEntity = (ExecutionEntity) execution;
 
@@ -735,6 +753,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return evt;
   }
 
+  @Override
   public HistoryEvent createTaskInstanceCreateEvt(DelegateTask task) {
 
     // create event instance
@@ -748,6 +767,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return evt;
   }
 
+  @Override
   public HistoryEvent createTaskInstanceUpdateEvt(DelegateTask task) {
 
     // create event instance
@@ -770,6 +790,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return evt;
   }
 
+  @Override
   public HistoryEvent createTaskInstanceCompleteEvt(DelegateTask task, String deleteReason) {
 
     // create event instance
@@ -792,6 +813,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // User Operation Logs ///////////////////////////
 
+  @Override
   public List<HistoryEvent> createUserOperationLogEvents(UserOperationLogContext context) {
     List<HistoryEvent> historyEvents = new ArrayList<HistoryEvent>();
 
@@ -813,14 +835,17 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // variables /////////////////////////////////
 
+  @Override
   public HistoryEvent createHistoricVariableCreateEvt(VariableInstanceEntity variableInstance, VariableScope sourceVariableScope) {
     return createHistoricVariableEvent(variableInstance, sourceVariableScope, HistoryEventTypes.VARIABLE_INSTANCE_CREATE);
   }
 
+  @Override
   public HistoryEvent createHistoricVariableDeleteEvt(VariableInstanceEntity variableInstance, VariableScope sourceVariableScope) {
     return createHistoricVariableEvent(variableInstance, sourceVariableScope, HistoryEventTypes.VARIABLE_INSTANCE_DELETE);
   }
 
+  @Override
   public HistoryEvent createHistoricVariableUpdateEvt(VariableInstanceEntity variableInstance, VariableScope sourceVariableScope) {
     return createHistoricVariableEvent(variableInstance, sourceVariableScope, HistoryEventTypes.VARIABLE_INSTANCE_UPDATE);
   }
@@ -832,6 +857,7 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // form Properties ///////////////////////////
 
+  @Override
   public HistoryEvent createFormPropertyUpdateEvt(ExecutionEntity execution, String propertyId, String propertyValue, String taskId) {
 
     final IdGenerator idGenerator = Context.getProcessEngineConfiguration().getIdGenerator();
@@ -869,18 +895,22 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // Incidents //////////////////////////////////
 
+  @Override
   public HistoryEvent createHistoricIncidentCreateEvt(Incident incident) {
     return createHistoricIncidentEvt(incident, HistoryEventTypes.INCIDENT_CREATE);
   }
 
+  @Override
   public HistoryEvent createHistoricIncidentResolveEvt(Incident incident) {
     return createHistoricIncidentEvt(incident, HistoryEventTypes.INCIDENT_RESOLVE);
   }
 
+  @Override
   public HistoryEvent createHistoricIncidentDeleteEvt(Incident incident) {
     return createHistoricIncidentEvt(incident, HistoryEventTypes.INCIDENT_DELETE);
   }
 
+  @Override
   public HistoryEvent createHistoricIncidentMigrateEvt(Incident incident) {
     return createHistoricIncidentEvt(incident, HistoryEventTypes.INCIDENT_MIGRATE);
   }
@@ -1031,10 +1061,12 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
 
   // Job Log
 
+  @Override
   public HistoryEvent createHistoricJobLogCreateEvt(Job job) {
     return createHistoricJobLogEvt(job, HistoryEventTypes.JOB_CREATE);
   }
 
+  @Override
   public HistoryEvent createHistoricJobLogFailedEvt(Job job, Throwable exception) {
     HistoricJobLogEventEntity event = (HistoricJobLogEventEntity) createHistoricJobLogEvt(job, HistoryEventTypes.JOB_FAIL);
 
@@ -1059,10 +1091,12 @@ public class DefaultHistoryEventProducer implements HistoryEventProducer {
     return event;
   }
 
+  @Override
   public HistoryEvent createHistoricJobLogSuccessfulEvt(Job job) {
     return createHistoricJobLogEvt(job, HistoryEventTypes.JOB_SUCCESS);
   }
 
+  @Override
   public HistoryEvent createHistoricJobLogDeleteEvt(Job job) {
     return createHistoricJobLogEvt(job, HistoryEventTypes.JOB_DELETE);
   }

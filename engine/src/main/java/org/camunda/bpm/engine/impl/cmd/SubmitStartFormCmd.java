@@ -30,7 +30,6 @@ import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.engine.impl.persistence.deploy.cache.DeploymentCache;
 import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.impl.persistence.entity.ProcessDefinitionEntity;
-import org.camunda.bpm.engine.impl.pvm.runtime.ProcessInstanceStartContext;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
@@ -76,8 +75,6 @@ public class SubmitStartFormCmd implements Command<ProcessInstance>, Serializabl
     // since they are lost after the async continuation otherwise
     // see CAM-2828
     if (processDefinition.getInitial().isAsyncBefore()) {
-      // avoid firing history events
-      processInstance.setStartContext(new ProcessInstanceStartContext(processInstance.getActivity()));
       FormPropertyHelper.initFormPropertiesOnScope(variables, processInstance);
       processInstance.start();
 

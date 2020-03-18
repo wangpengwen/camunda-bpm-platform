@@ -30,6 +30,7 @@ import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.task.Task;
 import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.RequiredHistoryLevel;
+import org.camunda.bpm.engine.variable.Variables;
 
 /**
  * @author Thorben Lindhauer
@@ -281,6 +282,23 @@ public class ProcessInstanceModificationHistoryTest extends PluggableProcessEngi
     assertEquals("kermit", instance.getAssignee());
   }
 
+  @Deployment(resources = {"org/camunda/bpm/engine/test/history/oneAsyncTaskProcess.bpmn20.xml"})
+  public void testHistoricVariables() {
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("oneTaskProcess", Variables.createVariables().putValue("foo", "bar"));
+
+    executeJob(managementService.createJobQuery().singleResult());
+
+    // when TODO
+    runtimeService.createProcessInstanceModification(processInstance.getId())
+      .startBeforeActivity("theStart")
+      .execute(true, true);
+
+    // then TODO
+    HistoricVariableInstance variable = historyService.createHistoricVariableInstanceQuery().singleResult();
+    assertNotNull(variable);
+    assertEquals(processInstance.getId(), variable.getProcessInstanceId());
+  }
+
   protected ActivityInstance getChildInstanceForActivity(ActivityInstance activityInstance, String activityId) {
     if (activityId.equals(activityInstance.getActivityId())) {
       return activityInstance;
@@ -304,4 +322,19 @@ public class ProcessInstanceModificationHistoryTest extends PluggableProcessEngi
       taskService.complete(tasks.get(0).getId());
     }
   }
+
+  
+  protected void executeJob(Job job) {
+    while (job != null && job.getRetries() > 0) {
+      try {
+        managementService.executeJob(job.getId());
+      }
+      catch (Exception e) {
+        // ignore
+      }
+
+      job = managementService.createJobQuery().jobId(job.getId()).singleResult();
+    }
+  }
+
 }

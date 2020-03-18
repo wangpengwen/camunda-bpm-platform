@@ -42,8 +42,10 @@ import org.camunda.bpm.engine.runtime.Execution;
 import org.camunda.bpm.engine.runtime.ProcessInstance;
 import org.camunda.bpm.engine.runtime.VariableInstance;
 import org.camunda.bpm.engine.task.Task;
+import org.camunda.bpm.engine.test.Deployment;
 import org.camunda.bpm.engine.test.ProcessEngineRule;
 import org.camunda.bpm.engine.test.RequiredHistoryLevel;
+import org.camunda.bpm.engine.test.api.runtime.migration.models.AsyncProcessModels;
 import org.camunda.bpm.engine.test.api.runtime.migration.models.ProcessModels;
 import org.camunda.bpm.engine.test.api.runtime.util.IncrementCounterListener;
 import org.camunda.bpm.engine.test.util.ProcessEngineTestRule;
@@ -335,6 +337,30 @@ public class RestartProcessInstanceSyncTest {
     ProcessDefinition processDefinition = testRule.deployAndGetDefinition(ProcessModels.SUBPROCESS_PROCESS);
     ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("Process", Variables.createVariables().putValue("var", "bar"));
     runtimeService.setVariable(processInstance.getId(), "bar", "foo");
+    
+    runtimeService.deleteProcessInstance(processInstance.getId(), "test");
+    
+    // when
+    runtimeService.restartProcessInstances(processDefinition.getId())
+    .startBeforeActivity("userTask")
+    .processInstanceIds(processInstance.getId())
+    .initialSetOfVariables()
+    .execute();
+    
+    // then
+    ProcessInstance restartedProcessInstance = runtimeService.createProcessInstanceQuery().processDefinitionId(processDefinition.getId()).active().singleResult();
+    List<VariableInstance> variables = runtimeService.createVariableInstanceQuery().processInstanceIdIn(restartedProcessInstance.getId()).list();
+    assertEquals(1, variables.size());
+    assertEquals("var", variables.get(0).getName());
+    assertEquals("bar", variables.get(0).getValue());
+  }
+
+  @Test
+  public void shouldSetInitialVersionOfVariablesAsyncBefore() {
+    // given
+    ProcessDefinition processDefinition = testRule.deployAndGetDefinition(AsyncProcessModels.ASYNC_BEFORE_START_EVENT_PROCESS);
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("Process", Variables.createVariables().putValue("var", "bar"));
+    runtimeService.setVariable(processInstance.getId(), "bar", "foo");
 
     runtimeService.deleteProcessInstance(processInstance.getId(), "test");
 
@@ -350,6 +376,61 @@ public class RestartProcessInstanceSyncTest {
     List<VariableInstance> variables = runtimeService.createVariableInstanceQuery().processInstanceIdIn(restartedProcessInstance.getId()).list();
     assertEquals(1, variables.size());
     assertEquals("var", variables.get(0).getName());
+    assertEquals("bar", variables.get(0).getValue());
+  }
+
+  @Test
+  @Deployment(resources = {"org/camunda/bpm/engine/test/bpmn/async/AsyncStartEventTest.testAsyncStartEventListeners.bpmn20.xml"})
+  public void shouldSetInitialVersionOfVariablesAsyncBeforeExecutionListener() {
+    // given
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("asyncStartEvent", Variables.createVariables().putValue("var", "bar"));
+    runtimeService.setVariable(processInstance.getId(), "bar", "foo");
+    
+    runtimeService.deleteProcessInstance(processInstance.getId(), "test");
+    
+    // when
+    runtimeService.restartProcessInstances(processInstance.getProcessDefinitionId())
+    .startBeforeActivity("task")
+    .processInstanceIds(processInstance.getId())
+    .initialSetOfVariables()
+    .execute();
+    
+    // then
+    ProcessInstance restartedProcessInstance = runtimeService.createProcessInstanceQuery().processDefinitionId(processInstance.getProcessDefinitionId()).active().singleResult();
+    List<VariableInstance> variables = runtimeService.createVariableInstanceQuery()
+        .processInstanceIdIn(restartedProcessInstance.getId()).variableName("var").list();
+    assertEquals(1, variables.size());
+    assertEquals("bar", variables.get(0).getValue());
+    variables = runtimeService.createVariableInstanceQuery()
+        .processInstanceIdIn(restartedProcessInstance.getId()).variableName("listener").list();
+    assertEquals(1, variables.size());
+    assertEquals("listener invoked", variables.get(0).getValue());
+  }
+
+  @Test
+  @Deployment(resources = {
+      "org/camunda/bpm/engine/test/bpmn/async/AsyncStartEventTest.testCallActivity-super.bpmn20.xml",
+      "org/camunda/bpm/engine/test/bpmn/async/AsyncStartEventTest.testCallActivity-sub.bpmn20.xml"
+  })
+  public void shouldSetInitialVersionOfVariablesAsyncBeforeCallActivity() {
+    // given
+    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("super", Variables.createVariables().putValue("var", "bar"));
+    runtimeService.setVariable(processInstance.getId(), "bar", "foo");
+
+    runtimeService.deleteProcessInstance(processInstance.getId(), "test");
+
+    // when
+    runtimeService.restartProcessInstances(processInstance.getProcessDefinitionId())
+      .startBeforeActivity("theCallActivity")
+      .processInstanceIds(processInstance.getId())
+      .initialSetOfVariables()
+      .execute();
+
+    // then
+    ProcessInstance restartedProcessInstance = runtimeService.createProcessInstanceQuery().processDefinitionId(processInstance.getProcessDefinitionId()).active().singleResult();
+    List<VariableInstance> variables = runtimeService.createVariableInstanceQuery()
+        .processInstanceIdIn(restartedProcessInstance.getId()).variableName("var").list();
+    assertEquals(1, variables.size());
     assertEquals("bar", variables.get(0).getValue());
   }
 
@@ -645,7 +726,7 @@ public class RestartProcessInstanceSyncTest {
     // then
     ProcessInstance restartedProcessInstance = runtimeService.createProcessInstanceQuery().processDefinitionId(processDefinition.getId()).singleResult();
     List<VariableInstance> variables = runtimeService.createVariableInstanceQuery().processInstanceIdIn(restartedProcessInstance.getId()).list();
-    Assert.assertEquals(0, variables.size());
+    assertEquals(0, variables.size());
   }
 
   @Test
